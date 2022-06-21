@@ -1,0 +1,105 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: APP_NAME
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    name: http
+    targetPort: 80
+  selector:
+    app: MY_PROJECT
+    tier: MY_APPNAME
+    rank: MY_NAMESPACE
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    certmanager.k8s.io/clusterissuer: letsencrypt-prod
+    kubernetes.io/ingress.class: nginx
+    kubernetes.io/ingress.provider: nginx
+    kubernetes.io/tls-acme: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+  name: APP_NAME
+spec:
+  rules:
+  - host: MY_WEB_NAME.MY_DOMAIN
+    http:
+      paths:
+      - backend:
+          serviceName: APP_NAME
+          servicePort: 80
+        path: /
+  tls:
+  - hosts:
+    - MY_WEB_NAME.MY_DOMAIN
+    secretName: APP_NAME-tls
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: APP_NAME
+spec:
+  replicas: REPLICA
+  strategy:
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: MY_PROJECT
+      tier: MY_APPNAME
+      rank: MY_NAMESPACE
+  template:
+    metadata:
+      labels:
+        app: MY_PROJECT
+        tier: MY_APPNAME
+        rank: MY_NAMESPACE
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: tier
+                  operator: In
+                  values:
+                  - MY_APPNAME
+              topologyKey: kubernetes.io/hostname
+      containers:
+        - image: IMAGE_SHA
+          imagePullPolicy: IfNotPresent
+          name: MY_APPNAME
+          ports:
+          - containerPort: 80
+            name: http
+          resources:
+            limits:
+              cpu: 100m
+              memory: 100Mi
+          env:
+            - name: GET_HOSTS_FROM
+              value: dns 
+          readinessProbe:
+            tcpSocket:
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 2
+            successThreshold: 1
+            failureThreshold: 3
+          livenessProbe:
+            tcpSocket:
+              port: 80
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            timeoutSeconds: 2
+            successThreshold: 1
+            failureThreshold: 3
+      imagePullSecrets:
+        - name: sre-registry

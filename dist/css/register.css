@@ -1,0 +1,16 @@
+html .register-btn{
+    border:1px solid rgba(255,174,0,0.3);
+    background: linear-gradient(135deg,rgba(255,174,0,0.3) 0%,rgba(255,213,0,0.1) 100%);
+}
+html .el-checkbox .el-checkbox__inner{
+    background-color: transparent;
+}
+html .el-form .el-input__inner,.login-btn,.btn,.info-input,html .register-btn{
+    height:40px;
+    line-height: 40px;
+}
+html .el-input__icon {
+    line-height: 40px !important;
+
+}
+

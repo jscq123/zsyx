@@ -1,0 +1,17 @@
+{
+    "status":200,
+    "type":"month",
+    "message":"date data",
+    "list": [{
+        "num":1,
+        "name":"宝钗",
+        "odds":"50.0%",
+        "RWT":891
+      },{
+        "num":2,
+        "name":"平儿",
+        "odds":"45.0%",
+        "RWT":779
+      }]
+}
+
